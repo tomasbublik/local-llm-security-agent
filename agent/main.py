@@ -1,11 +1,18 @@
 from pprint import pprint
+import sys
 
 from agent.config import settings
+from agent.fix_executor import execute_dependency_fix
 from agent.tools.github_repos import resolve_target_repositories
 from agent.tools.github_alerts import collect_dependabot_alerts, select_fix_candidate
 from agent.agent_loop import plan_fix_for_alert
 
 def main() -> None:
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except AttributeError:
+        pass
+
     print(f"OLLAMA_MODEL={settings.ollama_model}")
     print(f"OLLAMA_HOST={settings.ollama_host}")
     print(f"LOG_LEVEL={settings.log_level}")
@@ -32,12 +39,17 @@ def main() -> None:
     print("Selected candidate:")
     pprint(candidate)
 
-    if candidate:
-        print("\nGenerating fix plan...\n")
-        result = plan_fix_for_alert(candidate)
-        pprint(result)
-    else:
+    if not candidate:
         print("No candidate alert found.")
+        return
+
+    print("\nGenerating fix plan...\n")
+    planning_result = plan_fix_for_alert(candidate)
+    pprint(planning_result)
+
+    print("\nExecuting bounded dependency fix...\n")
+    execution_result = execute_dependency_fix(candidate, planning_result["plan"])
+    pprint(execution_result)
 
 
 

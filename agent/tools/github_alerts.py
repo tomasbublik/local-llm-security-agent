@@ -19,8 +19,10 @@ def normalize_dependabot_alert(alert: dict[str, Any], owner: str, repo: str) -> 
     advisory = alert.get("security_advisory") or {}
     vulnerability = alert.get("security_vulnerability") or {}
 
-    severity = advisory.get("severity") or vulnerability.get("severity")
-    summary = advisory.get("summary") or advisory.get("description")
+    first_patched_version = None
+    fpv = vulnerability.get("first_patched_version") or {}
+    if isinstance(fpv, dict):
+        first_patched_version = fpv.get("identifier")
 
     return {
         "repo_owner": owner,
@@ -30,11 +32,13 @@ def normalize_dependabot_alert(alert: dict[str, Any], owner: str, repo: str) -> 
         "state": alert.get("state"),
         "dependency_name": package.get("name"),
         "ecosystem": package.get("ecosystem"),
-        "severity": severity,
-        "summary": summary,
+        "severity": advisory.get("severity") or vulnerability.get("severity"),
+        "summary": advisory.get("summary") or advisory.get("description"),
         "html_url": alert.get("html_url"),
+        "ghsa_id": advisory.get("ghsa_id"),
+        "first_patched_version": first_patched_version,
+        "vulnerable_version_range": vulnerability.get("vulnerable_version_range"),
     }
-
 
 def collect_dependabot_alerts(repositories: list[dict[str, Any]]) -> list[dict[str, Any]]:
     collected: list[dict[str, Any]] = []

@@ -7,7 +7,7 @@ def ensure_repo_cloned(owner: str, repo: str, workdir: Path) -> Path:
 
     if repo_dir.exists():
         subprocess.run(
-            ["git", "-C", str(repo_dir), "pull"],
+            ["git", "-C", str(repo_dir), "fetch"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
