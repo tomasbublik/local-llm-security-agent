@@ -1,4 +1,4 @@
-# local-llm-security-agent-poc
+# local-llm-security-agent
 
 Minimal PoC for a local open-source LLM security-fix agent.
 
